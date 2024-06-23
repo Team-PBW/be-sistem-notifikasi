@@ -39,8 +39,9 @@ func (c *CalenderRouter) GetAllRouter() *echo.Echo {
 	evt.Use(useAuthJwt)
 	
 	evt.GET("/:id", event.DetailEvent)
-	evt.POST("/new", event.AddEvent)
-
+	evt.POST("/", event.AddEvent)
+	evt.PATCH("/:id", event.UpdateEvent)
+	evt.DELETE("/:id", event.DeleteEvent)
 	// notification router
 
 	return e
