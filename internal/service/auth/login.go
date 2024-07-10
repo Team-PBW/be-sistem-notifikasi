@@ -3,13 +3,14 @@ package auth
 import (
 	"context"
 	"errors"
-	"strconv"
+	// "strconv"
 	"time"
 
 	// "os"
 	"log"
 
 	jwt "github.com/golang-jwt/jwt/v4"
+	"golang.org/x/e-calender/entity"
 	"golang.org/x/e-calender/internal/dto"
 	"golang.org/x/e-calender/internal/repository"
 	"golang.org/x/e-calender/model"
@@ -46,18 +47,19 @@ func NewAuthService(authRepository *repository.AuthRepository) *AuthService {
 
 func (u *AuthService) CreateAccount(ctx context.Context, user *dto.UserDto) error {
 	// var userRegistered *model.User
-	phoneNumber, err := strconv.Atoi(user.PhoneNumber)
-	if err != nil {
-		return err
-	}
+	// phoneNumber, err := strconv.Atoi(user.PhoneNumber)
+	// if err != nil {
+	// 	return err
+	// }
 
-	userRegistered := &model.User {
+	userRegistered := &entity.UserEntity {
 		Username: user.Username,
-		Pass: user.Pass,
-		PhoneNumber: phoneNumber,
+		Email: user.Email,
+		Password: user.Password,
+		CreatedAt: time.Now(),
 	}
 
-	err = u.AuthRepository.Create(ctx, userRegistered)
+	err := u.AuthRepository.Create(ctx, userRegistered)
 	if err != nil {
 		log.Println("user")
 		return errors.New("failed to create acc in service layer")
@@ -66,7 +68,7 @@ func (u *AuthService) CreateAccount(ctx context.Context, user *dto.UserDto) erro
 	return nil
 }
 
-func (u *AuthService) Find(ctx context.Context, user *model.User) (string, error) {
+func (u *AuthService) Find(ctx context.Context, user *dto.UserDto) (string, error) {
 	userFetched, err := u.AuthRepository.FindAcc(ctx, user.Username)
 	if err != nil {
 		log.Println("Failed to find user:", err)
@@ -74,7 +76,7 @@ func (u *AuthService) Find(ctx context.Context, user *model.User) (string, error
 	}
 
 	// Compare passwords securely
-	if !comparePasswords(userFetched.Pass, user.Pass) {
+	if !comparePasswords(userFetched.Password, user.Password) {
 		return "", ErrInvalidPassword
 	}
 
@@ -121,6 +123,25 @@ func (u *AuthService) ErrUserNotFound() error {
 func (u *AuthService) ErrInvalidPassword() error {
 	return ErrInvalidPassword
 }
+
+func (u *AuthService) GetUserInformation(username string) (*dto.UserDto, error) {
+
+	user, err := u.AuthRepository.GetSelfInformation(username)
+	if err != nil {
+		return nil, err
+	}
+
+	data := &dto.UserDto{
+		Username: username,
+		Email: user.Email,
+		// PhoneNumber: user.PhoneNumber,
+
+	}
+
+	return data, nil
+}
+
+
 
 // func (u *AuthService) Refresh() (string, error) {
 

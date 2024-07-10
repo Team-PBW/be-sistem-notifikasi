@@ -17,6 +17,6 @@ type DBTX interface {
 
 type NotificationDBTX interface {
 	NotifyUser(email string) error
-	ReadNotification(email string) ([]*model.Notification, error)
+	// ReadNotification(email string) ([]*model.Notification, error)
 	DeleteNotification(id uuid.UUID) error
 }

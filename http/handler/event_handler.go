@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -71,19 +72,27 @@ func (e *EventHandler) AddEvent(c echo.Context) error {
 
 	// get user request from addevent contoller
 
-	var event *dto.EventDTO
+	var event *dto.EventDto
 
 	username := c.Get("username")
 
 	log.Println(username)
 
 	// err := json.NewDecoder(c.Request().Body).Decode(&event)
-	err := e.Do.DecodeJson(c.Request().Body, &event)
+	// err := e.Do.DecodeJson(c.Request().Body, &event)
+	// if err != nil {
+	// 	log.Println("error decode event")
+	// 	return echo.NewHTTPError(500, "error internal server")
+	// }
+
+	err := json.NewDecoder(c.Request().Body).Decode(&event)
+
 	if err != nil {
-		log.Println("error decode event")
-		return echo.NewHTTPError(500, "error internal server")
+		c.Logger().Error()
+		return err
 	}
 
+	log.Println(event)
 	// decode to struct in json
 	// if err = c.ShouldBindJSON(&dataCreated); err != nil {
 	// 	c.JSON(http.StatusBadRequest, gin.H{"status": "bad request"})
@@ -176,4 +185,30 @@ func (e *EventHandler) ShowAllEvents(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, gin.H{"status": "event deleted"})
+}
+
+func (e *EventHandler) CategorizeEventByDatetime(c echo.Context) error {
+	queryParams := c.QueryParams()
+
+	if len(queryParams) == 0 {
+		return c.JSON(http.StatusBadRequest, gin.H{"status": "attempt to get query params, but no query params found"})
+	}
+
+	queries := make(map[string][]string)
+
+	for key, values := range queryParams {
+		for _, value := range values {
+			queries[key] = append(queries[key], value)
+		}
+	}
+
+	// data, err := e.EventService.CheckEventByDateDay(queries)
+	// if err != nil {
+	// 	return err
+	// }
+
+	return c.JSON(
+		http.StatusOK,
+		queries,
+	)
 }

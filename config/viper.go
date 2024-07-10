@@ -11,7 +11,7 @@ func ViperGetEnv(key string) string {
 	viper.SetConfigName("app")
 
 	// change with your own env file directory
-	viper.AddConfigPath("D:/DEVELOPMENT/golang/src/e-calender/e-calender")
+	viper.AddConfigPath("D:/sistem reminder si-be/be-sistem-reminder")
 
 	err := viper.ReadInConfig()
 	if err != nil {

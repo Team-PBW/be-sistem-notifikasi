@@ -2,6 +2,8 @@ package dto
 
 type UserDto struct {
 	Username    string `json:"username"`
-	Pass		string `json:"pass"`
+	Email	string `json:"email"`
+	Password		string `json:"password"`
+	Alamat	string `json:"alamat"`
 	PhoneNumber string `json:"phone_number"`
 }

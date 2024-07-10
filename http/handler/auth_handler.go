@@ -102,7 +102,7 @@ func (u *AuthHandler) Login(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Create account only executed with POST Method")
 	}
 
-	var user *model.User
+	var user *dto.UserDto
 	d := json.NewDecoder(c.Request().Body)
 	if err := d.Decode(&user); err != nil {
 		log.Println("Failed to decode")
@@ -141,4 +141,20 @@ func (u *AuthHandler) Login(c echo.Context) error {
 
 	return nil
 	// w.Write([]byte(fmt.Sprintf("access_token: %s", token)))
+}
+
+func (u *AuthHandler) GetMe(c echo.Context) error {
+	username := c.Get("username").(string)
+
+	log.Println(username)
+
+	getMe, err := u.AuthService.GetUserInformation(username);
+	if err != nil {
+		c.Logger().Error()
+		return err
+	}
+
+	
+
+	return c.JSON(200, getMe)
 }

@@ -8,10 +8,12 @@ import (
 	"fmt"
 
 	// "github.com/spf13/viper"
-	"gorm.io/driver/mysql"
-	"golang.org/x/e-calender/config"
-	"gorm.io/gorm"
 	"errors"
+
+	"golang.org/x/e-calender/config"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // func viperEnvVar(key string) string {
@@ -60,7 +62,9 @@ func NewGorm() (*gorm.DB, error) {
 	// return db, nil
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", DB_USERNAME, DB_PASS, DB_HOST, DB_PORT, DB_SCHEMA)
-    db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+    db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
     if err != nil {
         return nil, errors.New("database not found")
     }

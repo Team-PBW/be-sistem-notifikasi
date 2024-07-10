@@ -10,6 +10,7 @@ import (
 	"golang.org/x/e-calender/http/handler"
 	"golang.org/x/e-calender/http/handler/helper"
 	"golang.org/x/e-calender/internal/repository"
+	"golang.org/x/e-calender/internal/service"
 	"golang.org/x/e-calender/internal/service/auth"
 	"golang.org/x/e-calender/internal/service/event"
 	"gorm.io/gorm"
@@ -33,11 +34,11 @@ func GetDatabase() *gorm.DB {
 		return nil
 	}
 
-	tx := db.Begin()
-	return tx
+	// tx := db.Begin()
+	return db
 }
 
-func (a *InitApp) DefineHandler() (*handler.AuthHandler, *handler.EventHandler) {
+func (a *InitApp) DefineHandler() (*handler.AuthHandler, *handler.EventHandler, *handler.CategoryHandler, *handler.NotificationHandler) {
 
 	log := logrus.New()
     log.SetFormatter(&logrus.JSONFormatter{})
@@ -45,15 +46,21 @@ func (a *InitApp) DefineHandler() (*handler.AuthHandler, *handler.EventHandler) 
 
 	authRepository := repository.NewAuthRepository(a.DB)
 	eventRepository := repository.NewEventRepository(a.DB)
-	// notificationRepository := repository.NewNotificationRepository(a.DB)
+	categoryRepository := repository.NewCategoryRepository(a.DB)
+	notificationRepository := repository.NewNotificationRepository(a.DB)
 
 	authService := auth.NewAuthService(authRepository)
 	eventService := event.NewEventService(eventRepository, config.NewValidator())
-	// notificationService := notification.NewNotificationService(notificationRepository)
+	categoryService := service.NewCategoryService(categoryRepository)
+	notificationService := service.NewNotificationService(notificationRepository)
 
 	authHandler := handler.NewAuthHandler(authService, helper.NewHelper(), log)
 	eventHandler := handler.NewEventHandler(eventService, helper.NewHelper())
+	categoryHandler := handler.NewCategoryHandler(categoryService)
+	notificationHandler := handler.NewNotificationHandler(notificationService, helper.NewHelper())
+
+	log.Println(categoryHandler)
 	// notificationHandler := handler.NewNotificationHandler(notificationService)
 
-	return authHandler, eventHandler
+	return authHandler, eventHandler, categoryHandler, notificationHandler
 }
