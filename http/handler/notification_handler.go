@@ -47,3 +47,14 @@ func (n *NotificationHandler) NotificationBroadcast(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, nil)
 }
+
+func (n *NotificationHandler) GetAllNotification(c echo.Context) error {
+	username := c.Get("username").(string)
+
+	datas, err := n.NotificationService.GetAllNotification(username)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, datas)
+}

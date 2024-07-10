@@ -50,7 +50,7 @@ func (a *InitApp) DefineHandler() (*handler.AuthHandler, *handler.EventHandler, 
 	notificationRepository := repository.NewNotificationRepository(a.DB)
 
 	authService := auth.NewAuthService(authRepository)
-	eventService := event.NewEventService(eventRepository, config.NewValidator())
+	eventService := event.NewEventService(eventRepository, notificationRepository, config.NewValidator())
 	categoryService := service.NewCategoryService(categoryRepository)
 	notificationService := service.NewNotificationService(notificationRepository)
 

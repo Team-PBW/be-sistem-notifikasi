@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
+	// "log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +10,8 @@ import (
 	"golang.org/x/e-calender/http/handler/helper"
 	"golang.org/x/e-calender/internal/dto"
 	"golang.org/x/e-calender/internal/service/event"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -188,10 +190,11 @@ func (e *EventHandler) ShowAllEvents(c echo.Context) error {
 }
 
 func (e *EventHandler) CategorizeEventByDatetime(c echo.Context) error {
+	username := c.Get("username").(string)
 	queryParams := c.QueryParams()
 
 	if len(queryParams) == 0 {
-		return c.JSON(http.StatusBadRequest, gin.H{"status": "attempt to get query params, but no query params found"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"status": "attempt to get query params, but no query params found"})
 	}
 
 	queries := make(map[string][]string)
@@ -202,13 +205,15 @@ func (e *EventHandler) CategorizeEventByDatetime(c echo.Context) error {
 		}
 	}
 
-	// data, err := e.EventService.CheckEventByDateDay(queries)
-	// if err != nil {
-	// 	return err
-	// }
+	log.Println(queries)
+
+	data, err := e.EventService.CheckEventByDateDay(username, queries)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
 
 	return c.JSON(
 		http.StatusOK,
-		queries,
+		data,
 	)
 }

@@ -8,16 +8,17 @@ import (
 )
 
 type EventEntity struct {
-	Id          string
+	Id          string `gorm:"primary_key"`
 	CategoryId  int
 	Title       string
 	Description string
-	StartTime   time.Time
-	EndTime     time.Time
-	TimeDistance int
+	StartTime   time.Time `gorm:"type:datetime"`
+	EndTime     time.Time `gorm:"type:datetime"`
+	// TimeDistance int
 	Location string
-	Distance int
+	// Distance int
 	Date time.Time
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	Bentrok bool
 }

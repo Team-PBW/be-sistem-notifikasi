@@ -61,7 +61,7 @@ func NewGorm() (*gorm.DB, error) {
 	// }
 	// return db, nil
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", DB_USERNAME, DB_PASS, DB_HOST, DB_PORT, DB_SCHEMA)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local", DB_USERNAME, DB_PASS, DB_HOST, DB_PORT, DB_SCHEMA)
     db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})

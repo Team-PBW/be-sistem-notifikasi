@@ -78,15 +78,22 @@ func (n *NotificationRepository) Create(event *entity.EventNotification) error {
 	return n.TX.Model(&entity.EventNotification{}).Create(&event).Error
 }
 
-func (n *NotificationRepository) ReadNotification(email string) ([]*entity.EventNotification, error) {
+func (n *NotificationRepository) ReadNotification(username string) ([]*entity.EventNotification, error) {
 	var notif []*entity.EventNotification
 
-	err := n.TX.Model(&entity.EventNotification{}).Find(&notif).Where("email = ?", email).Order("notification_time DESC").Error
+	err := n.TX.Model(&entity.EventNotification{}).
+		Joins("JOIN event_entities ON event_notifications.event_id = event_entities.id").
+		Joins("JOIN followed_event_entities ON followed_event_entities.event_id = event_notifications.event_id").
+		Where("followed_event_entities.username = ?", username).
+		Order("event_notifications.notification_time DESC").
+		Find(&notif).Error
+
 	if err != nil {
 		return nil, err
 	}
 	return notif, nil
 }
+
 
 func (n *NotificationRepository) NotifyUser(id uuid.UUID) ([]*model.User, error) {
 	var user []*model.User
@@ -101,4 +108,8 @@ func (n *NotificationRepository) NotifyUser(id uuid.UUID) ([]*model.User, error)
 func (n *NotificationRepository) DeleteNotification(id uuid.UUID) error {
 	
 	return n.TX.Where("id = ?", id).Delete(&entity.EventNotification{}).Error 
+}
+
+func (n *NotificationRepository) CreateWarningEvent(notif *entity.EventNotification) error {
+	return n.TX.Create(&notif).Error
 }

@@ -2,6 +2,8 @@ package repository
 
 import (
 	"errors"
+	"log"
+	"time"
 
 	"golang.org/x/e-calender/entity"
 	// "golang.org/x/e-calender/internal/dto"
@@ -27,15 +29,62 @@ func (e *EventRepository) BeginTransaction() *gorm.DB {
 	return e.TX.Begin()
 }
 
-func (e *EventRepository) FindEventByMonth(username string, start string, end string) (interface{}, error) {
-	var event interface{}
-	err := e.TX.Joins("EventEntity").Joins("EventFollowedEntity").Where("date BETWEEN ? AND ?", start, end).Find(&event, "followed_event_entities.username = ?", username).Error
+func (e *EventRepository) FindEventByMonth(username string, start string, end string) ([]entity.EventEntity, error) {
+    var events []entity.EventEntity
 
+    // startDate, err := time.Parse("2006-01-02", start)
+    // if err != nil {
+    //     return nil, err
+    // }
+    // endDate, err := time.Parse("2006-01-02", end)
+    // if err != nil {
+    //     return nil, err
+    // }
+
+	const (
+		dateLayout     = "2006-01-02"
+		timeLayout     = "15:04:05"
+		dateTimeLayout = "2006-01-02 15:04:05"
+	)
+
+	startFilterDate, err := time.Parse(dateLayout, start)
 	if err != nil {
+		log.Println("Error parsing date:", err)
 		return nil, err
 	}
 
-	return event, nil
+	endFilterDate, err := time.Parse(dateLayout, end)
+	if err != nil {
+		log.Println("Error parsing date:", err)
+		return nil, err
+	}
+
+	startDate := startFilterDate.Format("2006-01-02")
+	endDate := endFilterDate.Format("2006-01-02")
+
+	log.Println(start)
+	log.Println(startDate)
+	log.Println(endDate)
+
+    err = e.TX.Joins("JOIN followed_event_entities ON followed_event_entities.event_id = event_entities.id").
+		Select("id", "title", "location", "distance", "description", "date", "category_id").
+        Where("followed_event_entities.username = ?", username).
+        Where("event_entities.date BETWEEN ? AND ?", startDate, endDate).
+        Find(&events).Error
+
+    if err != nil {
+        return nil, err
+    }
+
+    // for i, event := range events {
+	// 	// avoid error: unsupported Scan, storing driver.Value type []uint8 into type *time.Time
+    //     events[i].StartTime, err = time.Parse(time.RFC3339, event.StartTime.(string))
+    //     if err != nil {
+    //         return nil, err
+    //     }
+    // }
+
+    return events, nil
 }
 
 func (e *EventRepository) CreateEvent(user interface{}, event *entity.EventEntity, person map[string][]string) error {
@@ -196,3 +245,26 @@ func (e *EventRepository) FindEventsByHost(username string) ([]*model.Event, err
 // func (e *EventRepository) UpdateGuestByEventID(id string, guests []*model.EveryPerson) (*model.EventPersonConfirmed, error) {
 
 // }
+
+func (e *EventRepository) CheckEventExist(start time.Time, end time.Time, date time.Time) (bool) {
+	// convert uint8 to time.Time
+	dateString := date.Format("2006-01-02")
+
+	startTimeString := start.Format("15:04:05")
+	endTimeString := end.Format("15:04:05")
+
+
+	var count int64
+	err := e.TX.Table("event_entities").Where("date = ?", dateString).Where("start_time BETWEEN ? AND ? OR end_time BETWEEN ? AND ?", startTimeString, endTimeString, startTimeString, endTimeString).Count(&count).Error
+	if err != nil {
+		return false
+	}
+
+	log.Println("wii: ", count)
+
+	return count > 0
+}
+
+func (e *EventRepository) UpdateBentrok(idEvt string) error {
+	return e.TX.Table("event_entities").Where("id = ?", idEvt).Update("bentrok", 1).Error
+}

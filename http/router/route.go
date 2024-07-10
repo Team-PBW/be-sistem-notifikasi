@@ -2,8 +2,9 @@ package router
 
 import (
 	"github.com/labstack/echo"
+	midware "github.com/labstack/echo/middleware"
+	// "github.com/labstack/echo/v4"
 	"golang.org/x/e-calender/app"
-	// "golang.org/x/e-calender/internal/service/notification"
 	"golang.org/x/e-calender/middleware"
 )
 
@@ -25,45 +26,44 @@ func (c *CalenderRouter) GetAllRouter() *echo.Echo {
 	// middleware
 	newJwt := middleware.GetJwtValidate()
 	useAuthJwt := newJwt.ValidateJWT
-	
+
+	e.Use(midware.CORSWithConfig(midware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:5173"}, // Allow your frontend origin
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE, echo.OPTIONS},
+	}))
+
+
 	r := e.Group("/api/v1")
 
-	a := r.Group("/auth")
-	evt := r.Group("/event")
-	cat := r.Group("/category")
-	notif := r.Group("/notification")
-	// info := r.Group("/info")
+	// auth routes
+	authGroup := r.Group("/auth")
+	authGroup.POST("/register", auth.CreateAccount)
+	authGroup.POST("/login", auth.Login)
+	authGroup.GET("/me", auth.GetMe, useAuthJwt)
 
-	// n := r.Group("/notification")
+	// event routes
+	eventGroup := r.Group("/event")
+	eventGroup.Use(useAuthJwt)
+	eventGroup.GET("/:id", event.DetailEvent)
+	eventGroup.POST("", event.AddEvent)
+	eventGroup.GET("/all_events", event.CategorizeEventByDatetime)
+	// eventGroup.PATCH("/:id", event.UpdateEvent)
+	// eventGroup.DELETE("/:id", event.DeleteEvent)
 
-	// auth router
-	a.POST("/register", auth.CreateAccount)
-	a.POST("/login", auth.Login)
+	// category routes
+	categoryGroup := r.Group("/category")
+	categoryGroup.Use(useAuthJwt)
+	categoryGroup.POST("", category.CreateCategory)
+	categoryGroup.DELETE("/:id", category.DeleteCategory)
+	categoryGroup.GET("/categories", category.FindAllCategory)
 
-	// evt.Use(useAuthJwt)
-	a.GET("/me", auth.GetMe, useAuthJwt)
-
-	// event router
-	evt.Use(useAuthJwt)
-	notif.Use(useAuthJwt)
-	
-	evt.GET("/:id", event.DetailEvent)
-	evt.POST("/event", event.AddEvent)
-	evt.GET("/events", event.CategorizeEventByDatetime)
-	// evt.PATCH("/:id", event.UpdateEvent)
-	// evt.DELETE("/:id", event.DeleteEvent)
-
-	cat.Use(useAuthJwt)
-	cat.POST("/category", category.CreateCategory)
-	cat.DELETE("/category/:id", category.DeleteCategory)
-	cat.GET("/categories", category.FindAllCategory)
-
-	notif.GET("/notif", notification.NotificationBroadcast)
-	// notification.GET("", notification.CreateNotification)
-
-
-	// notification router
-
+	// notification routes
+	notificationGroup := r.Group("/notification")
+	notificationGroup.Use(useAuthJwt)
+	notificationGroup.GET("", notification.NotificationBroadcast)
+	notificationGroup.GET("/fetch", notification.GetAllNotification)
+	// notificationGroup.POST("", notification.CreateNotification)
 
 	return e
 }

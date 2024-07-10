@@ -14,12 +14,14 @@ import (
 
 type EventService struct {
 	EventRepository *repository.EventRepository
+	NotificationRepository *repository.NotificationRepository
 	Validate        *config.CustomValidator
 }
 
-func NewEventService(e *repository.EventRepository, v *config.CustomValidator) *EventService {
+func NewEventService(e *repository.EventRepository, n *repository.NotificationRepository, v *config.CustomValidator) *EventService {
 	return &EventService{
 		EventRepository: e,
+		NotificationRepository: n,
 		Validate:        v,
 	}
 }
@@ -67,12 +69,13 @@ func (e *EventService) CreateEvent(user string, event *dto.EventDto) (interface{
 		Title:        event.Title,
 		CategoryId:   event.IdCategory,
 		Date:         eventDate,
-		TimeDistance: event.TimeDistance,
+		// TimeDistance: event.TimeDistance,
 		Location:     event.Location,
-		Distance:     event.Distance,
+		// Distance:     event.Distance,
 		StartTime:    startTime,
 		EndTime:      endTime,
 		CreatedAt:    time.Now(),
+		Bentrok: false,
 	}
 
 	person := make(map[string][]string)
@@ -81,6 +84,43 @@ func (e *EventService) CreateEvent(user string, event *dto.EventDto) (interface{
 	if err != nil {
 		return nil, err
 	}
+
+	log.Println(startTime)
+
+	yesnt := e.EventRepository.CheckEventExist(startTime, endTime, eventDate)
+	if yesnt == true {
+		// return nil, nil
+
+		// jalanin create notifikasi warning sudah ada event di jam itu\
+
+		id := uuid.New()
+		notifUUID := id.String()
+
+		err := e.EventRepository.UpdateBentrok(stringID)
+		if err != nil {
+			return nil, err
+		}
+
+		notificationWarn := &entity.EventNotification{
+			Id: notifUUID, 
+			EventId: stringID,
+			NotificationTime: time.Now(),
+			Message: "Jadwal Bentrok, silahkan periksa kembali",
+			SendStatus: false,
+		}
+
+		err = e.NotificationRepository.CreateWarningEvent(notificationWarn)
+		if err != nil {
+			return nil, err
+		}
+
+		// return jangan buat data
+		// return "Periksa", nil
+	}
+
+	log.Println(yesnt)
+
+	// err = e.NotificationRepository.Create()
 
 	users, err := e.EventRepository.CheckPersonExist(stringID, event.InvitedUser)
 	if err != nil {

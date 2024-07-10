@@ -37,34 +37,45 @@ func (n *NotificationService) CreateNotification(username string) error {
 		return err
 	}
 
-	hMinusOne := startTime.AddDate(0, 0, -1)
+	log.Println(startTime)
 
-	if time.Now().After(hMinusOne) {
-		notificationExists, existingNotifications, err := n.NotificationRepository.CheckNotificationExists(idEvent, hMinusOne)
-		if err != nil {
-			return err
-		}
+	id := uuid.New().String()
 
-		if notificationExists {
-			log.Println("Existing notifications for the event:", existingNotifications)
-			return nil
-		}
-
-		id := uuid.New().String()
-
-		eventNotificationData := &entity.EventNotification{
-			Id:               id,
-			EventId:          idEvent,
-			NotificationTime: time.Now(),
-			Message:          "Acara akan diadakan H-1",
-			SendStatus:       false,
-		}
-
-		err = n.NotificationRepository.Create(eventNotificationData)
-		if err != nil {
-			return err
-		}
+	eventNotificationData := &entity.EventNotification{
+		Id:               id,
+		EventId:          idEvent,
+		NotificationTime: time.Now(),
+		Message:          "Acara akan diadakan H-1",
+		SendStatus:       false,
 	}
 
+	err = n.NotificationRepository.Create(eventNotificationData)
+	if err != nil {
+		return err
+	}
+
+	// hMinusOne := startTime.AddDate(0, 0, -1)
+
+	// if time.Now().After(hMinusOne) {
+	// 	notificationExists, existingNotifications, err := n.NotificationRepository.CheckNotificationExists(idEvent, hMinusOne)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	if notificationExists {
+	// 		log.Println("Existing notifications for the event:", existingNotifications)
+	// 		return nil
+	// 	}
+	// }
+
 	return nil
+}
+
+func (n *NotificationService) GetAllNotification(username string) ([]*entity.EventNotification, error) {
+	notifs, err := n.NotificationRepository.ReadNotification(username)
+	if err != nil {
+		return nil, err
+	}
+
+	return notifs, nil
 }
