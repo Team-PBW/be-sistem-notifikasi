@@ -78,10 +78,11 @@ func (n *NotificationRepository) Create(event *entity.EventNotification) error {
 	return n.TX.Model(&entity.EventNotification{}).Create(&event).Error
 }
 
-func (n *NotificationRepository) ReadNotification(username string) ([]*entity.EventNotification, error) {
-	var notif []*entity.EventNotification
+func (n *NotificationRepository) ReadNotification(username string) ([]*entity.EventJoinNotificationEntity, error) {
+	var notif []*entity.EventJoinNotificationEntity
 
-	err := n.TX.Model(&entity.EventNotification{}).
+	err := n.TX.Table("event_notifications").
+		Select("event_notifications.id, event_notifications.event_id, event_notifications.notification_time, event_notifications.message, event_notifications.send_status, event_entities.title, event_entities.start_time, event_entities.end_time, event_entities.date, event_entities.bentrok, event_entities.location").
 		Joins("JOIN event_entities ON event_notifications.event_id = event_entities.id").
 		Joins("JOIN followed_event_entities ON followed_event_entities.event_id = event_notifications.event_id").
 		Where("followed_event_entities.username = ?", username).
@@ -93,7 +94,6 @@ func (n *NotificationRepository) ReadNotification(username string) ([]*entity.Ev
 	}
 	return notif, nil
 }
-
 
 func (n *NotificationRepository) NotifyUser(id uuid.UUID) ([]*model.User, error) {
 	var user []*model.User

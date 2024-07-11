@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"golang.org/x/e-calender/entity"
+	"golang.org/x/e-calender/internal/dto"
 	"golang.org/x/e-calender/internal/repository"
 )
 
@@ -71,11 +72,36 @@ func (n *NotificationService) CreateNotification(username string) error {
 	return nil
 }
 
-func (n *NotificationService) GetAllNotification(username string) ([]*entity.EventNotification, error) {
+func (n *NotificationService) GetAllNotification(username string) ([]*dto.EventNotificationDto, error) {
+	var allEvents []*dto.EventNotificationDto
+
 	notifs, err := n.NotificationRepository.ReadNotification(username)
 	if err != nil {
 		return nil, err
 	}
 
-	return notifs, nil
+	for _, event := range notifs {
+		// date := event.Date.Format("2006-05-01")
+		// startTime := event.StartTime.Format("08:01:09")
+		// endTime := event.EndTime.Format("08:01:09")
+		newEvent := &dto.EventNotificationDto {
+			Id: event.Id,
+			EventId: event.EventId,
+			NotificationTime: event.NotificationTime.Format("2006-01-02"),
+			Title: event.Title,
+			CategoryId: event.CategoryId,
+			Location: event.Location,
+			Message: event.Message,
+			// Description: event.Description,
+			Date:        event.Date.Format("2006-01-02"),      // Format YYYY-MM-DD
+			StartTime:   event.StartTime.Format("15:04:05"),   // Format HH:MM:SS
+			EndTime:     event.EndTime.Format("15:04:05"),     // Format HH:MM:SS
+			Bentrok: event.Bentrok,
+			SendStatus: event.SendStatus,
+		}
+
+		allEvents = append(allEvents, newEvent)
+	}
+
+	return allEvents, nil
 }
