@@ -254,19 +254,25 @@ func (e *EventRepository) CheckEventExist(start time.Time, end time.Time, date t
 	// convert uint8 to time.Time
 	dateString := date.Format("2006-01-02")
 
-	startTimeString := start.Format("15:04:05")
-	endTimeString := end.Format("15:04:05")
+	// startTimeString := start.Format("15:04:05")
+	// endTimeString := end.Format("15:04:05")
+
+	// startNew := date + start
+	// endNew := date + end
+
+	startConvert := start.Add(-8 * time.Hour)
+	endConvert := end.Add(-8 * time.Hour)
 
 
 	var count int64
-	err := e.TX.Table("event_entities").Where("date = ?", dateString).Where("start_time BETWEEN ? AND ? OR end_time BETWEEN ? AND ?", startTimeString, endTimeString, startTimeString, endTimeString).Count(&count).Error
-	if err != nil {
+	err := e.TX.Table("event_entities").Where("date = ?", dateString).Where("start_time BETWEEN ? AND ? OR end_time BETWEEN ? AND ?", startConvert, endConvert, startConvert, endConvert).Count(&count).Error
+	if err != nil || count == 1 {
 		return false
 	}
 
 	log.Println("wii: ", count)
 
-	return count > 0
+	return count > 1
 }
 
 func (e *EventRepository) UpdateBentrok(idEvt string) error {

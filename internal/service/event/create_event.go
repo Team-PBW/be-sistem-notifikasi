@@ -62,6 +62,9 @@ func (e *EventService) CreateEvent(user string, event *dto.EventDto) (interface{
 		return nil, err
 	}
 
+	startTimeUTCMinus8 := startTime.Add(-8 * time.Hour)
+	endTimeUTCMinus8 := endTime.Add(-8 * time.Hour)
+
 	id := uuid.New()
 	stringID := id.String()
 	newEvent := &entity.EventEntity{
@@ -72,8 +75,8 @@ func (e *EventService) CreateEvent(user string, event *dto.EventDto) (interface{
 		// TimeDistance: event.TimeDistance,
 		Location:     event.Location,
 		// Distance:     event.Distance,
-		StartTime:    startTime,
-		EndTime:      endTime,
+		StartTime:    startTimeUTCMinus8,
+		EndTime:      endTimeUTCMinus8,
 		CreatedAt:    time.Now(),
 		Bentrok: false,
 	}
@@ -85,7 +88,7 @@ func (e *EventService) CreateEvent(user string, event *dto.EventDto) (interface{
 		return nil, err
 	}
 
-	log.Println(startTime)
+	log.Println(endTimeUTCMinus8)
 
 	yesnt := e.EventRepository.CheckEventExist(startTime, endTime, eventDate)
 	if yesnt == true {

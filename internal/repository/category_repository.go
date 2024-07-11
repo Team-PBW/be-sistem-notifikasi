@@ -43,6 +43,7 @@ func (c *CategoryRepository) Delete( idCategory int ) error {
 	return c.TX.Delete(&category, idCategory).Error
 }
 
+
 func (c *CategoryRepository) Update(idCategory int, body interface{}) (*entity.CategoryEntity, error) {
 	var category entity.CategoryEntity
 	err := c.TX.Model(&category).Where("id = ?", idCategory).Updates(body).Error
