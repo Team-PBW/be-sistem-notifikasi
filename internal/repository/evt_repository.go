@@ -66,10 +66,14 @@ func (e *EventRepository) FindEventByMonth(username string, start string, end st
 	log.Println(startDate)
 	log.Println(endDate)
 
+	var data []entity.EventEntity
+
     err = e.TX.Joins("JOIN followed_event_entities ON followed_event_entities.event_id = event_entities.id").
-		Select("id", "title", "location", "distance", "description", "date", "category_id").
+		// Select("id", "title", "location", "distance", "description", "date", "category_id", "start_time").
+		Find(&data).
         Where("followed_event_entities.username = ?", username).
         Where("event_entities.date BETWEEN ? AND ?", startDate, endDate).
+		Where("event_entities.bentrok = ?", 0).
         Find(&events).Error
 
     if err != nil {

@@ -16,12 +16,18 @@ func (s *EventService) CheckEventByDateDay(username string, queries map[string][
 	var allEvents []*dto.EventDto
 
 	for _, event := range events {
+		// date := event.Date.Format("2006-05-01")
+		// startTime := event.StartTime.Format("08:01:09")
+		// endTime := event.EndTime.Format("08:01:09")
 		newEvent := &dto.EventDto {
 			Id: event.Id,
 			Title: event.Title,
 			IdCategory: event.CategoryId,
-			// Location: event.Location,
-			Date: event.Date.String(),
+			Location: event.Location,
+			Description: event.Description,
+			Date:        event.Date.Format("2006-01-02"),      // Format YYYY-MM-DD
+			StartTime:   event.StartTime.Format("15:04:05"),   // Format HH:MM:SS
+			EndTime:     event.EndTime.Format("15:04:05"),     // Format HH:MM:SS
 		}
 
 		allEvents = append(allEvents, newEvent)

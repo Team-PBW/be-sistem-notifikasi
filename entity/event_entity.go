@@ -12,8 +12,8 @@ type EventEntity struct {
 	CategoryId  int
 	Title       string
 	Description string
-	StartTime   time.Time `gorm:"type:datetime"`
-	EndTime     time.Time `gorm:"type:datetime"`
+	StartTime   time.Time
+	EndTime     time.Time
 	// TimeDistance int
 	Location string
 	// Distance int
