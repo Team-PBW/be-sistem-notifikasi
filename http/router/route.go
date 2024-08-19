@@ -41,6 +41,7 @@ func (c *CalenderRouter) GetAllRouter() *echo.Echo {
 	authGroup.POST("/register", auth.CreateAccount)
 	authGroup.POST("/login", auth.Login)
 	authGroup.GET("/me", auth.GetMe, useAuthJwt)
+	authGroup.GET("/dropdown", auth.CheckFollower, useAuthJwt)
 
 	// event routes
 	eventGroup := r.Group("/event")
@@ -61,8 +62,8 @@ func (c *CalenderRouter) GetAllRouter() *echo.Echo {
 	// notification routes
 	notificationGroup := r.Group("/notification")
 	notificationGroup.Use(useAuthJwt)
-	notificationGroup.GET("", notification.NotificationBroadcast)
 	notificationGroup.GET("/fetch", notification.GetAllNotification)
+	notificationGroup.GET("/cron", notification.NotificationBroadcast)
 	// notificationGroup.POST("", notification.CreateNotification)
 
 	return e

@@ -158,3 +158,22 @@ func (u *AuthHandler) GetMe(c echo.Context) error {
 
 	return c.JSON(200, getMe)
 }
+
+
+func (u *AuthHandler) CheckFollower(c echo.Context) error {
+	username := c.Get("username").(string)
+
+	keyword := c.QueryParam("following")
+
+	getFollowingDropdown, err := u.AuthService.BatchUserDropdown(username, keyword);
+	if err != nil {
+		c.Logger().Error()
+		return c.JSON(500, http.StatusInternalServerError)
+	}
+
+	if len(getFollowingDropdown) == 0 {
+		return echo.NewHTTPError(404, "Follower Empty")
+	}
+
+	return c.JSON(200, getFollowingDropdown)
+}

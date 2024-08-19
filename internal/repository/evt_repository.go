@@ -29,6 +29,10 @@ func (e *EventRepository) BeginTransaction() *gorm.DB {
 	return e.TX.Begin()
 }
 
+func (e *EventRepository) EventFollowedPerson(person []string) error {
+	return e.TX.Table("followed_event_entity").CreateInBatches(person, len(person)).Error
+}
+
 func (e *EventRepository) FindEventByMonth(username string, start string, end string) ([]entity.EventEntity, error) {
     var events []entity.EventEntity
 
@@ -91,7 +95,7 @@ func (e *EventRepository) FindEventByMonth(username string, start string, end st
     return events, nil
 }
 
-func (e *EventRepository) CreateEvent(user interface{}, event *entity.EventEntity, person map[string][]string) error {
+func (e *EventRepository) CreateEvent(user interface{}, event *entity.EventEntity, person []string) error {
 	// defer func() {
 	// 	if r := recover(); r != nil {
 	// 		e.TX.Rollback()
@@ -214,10 +218,13 @@ func (e *EventRepository) FindEventByID(id string) (*entity.EventEntity, error) 
 	// 	}
 	// }()
 
+	log.Println("tesssssssssss repository")
+
 	var event *entity.EventEntity
 
-	if err := e.TX.Where("id = ?").Find(&event).Error; err != nil {
+	if err := e.TX.Where("id = ?", id).Find(&event).Error; err != nil {
 		// e.TX.Rollback()
+		log.Println(err)
 		return nil, err
 	}
 

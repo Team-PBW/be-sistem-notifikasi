@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"errors"
+	"strings"
+
 	// "strconv"
 	"time"
 
@@ -139,6 +141,27 @@ func (u *AuthService) GetUserInformation(username string) (*dto.UserDto, error) 
 	}
 
 	return data, nil
+}
+
+func (u *AuthService) BatchUserDropdown(username string, keyword string) ([]*dto.UserDto, error) {
+	data, err := u.AuthRepository.FriendDropdown(username)
+	if err != nil {
+		return nil, err
+	}
+
+	var userDropdowns []*dto.UserDto
+
+	for _, value := range data {
+		if strings.Contains(value.Email, keyword) || strings.Contains(value.Username, keyword) {
+			userEach := &dto.UserDto{
+				Email: value.Email,
+				Username: value.Username,
+			}
+			userDropdowns = append(userDropdowns, userEach)
+		}
+	}
+
+	return userDropdowns, err
 }
 
 

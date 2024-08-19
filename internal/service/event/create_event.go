@@ -2,13 +2,18 @@ package event
 
 import (
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"golang.org/x/e-calender/config"
 	"golang.org/x/e-calender/entity"
 	"golang.org/x/e-calender/internal/dto"
 	"golang.org/x/e-calender/internal/repository"
+
+	// "golang.org/x/e-calender/internal/service/event"
 	"golang.org/x/e-calender/model"
 )
 
@@ -26,6 +31,20 @@ func NewEventService(e *repository.EventRepository, n *repository.NotificationRe
 	}
 }
 
+func TimeConvert(format int, sign string, times ...string) ([]int, error) {
+	var valToStr []string
+	var valToInt []int
+	for _,val := range times {
+		valToStr = strings.SplitAfter(val, sign)
+		evtInt, err := strconv.Atoi(valToStr[format])
+		if err != nil {
+			return nil, err
+		}
+		valToInt = append(valToInt, evtInt)
+	}
+	return valToInt, nil
+}
+
 func (e *EventService) CreateEvent(user string, event *dto.EventDto) (interface{}, error) {
 	userToModel := &model.User{
 		Username: user,
@@ -34,6 +53,29 @@ func (e *EventService) CreateEvent(user string, event *dto.EventDto) (interface{
 	err := e.Validate.TryValidate(userToModel, event)
 	if err != nil {
 		return nil, err
+	}
+
+	// startTime := strings.SplitAfter(event.StartTime, ":")
+	// endTime := strings.SplitAfter(event.EndTime, ":")
+
+	// evtStartInt, err := strconv.Atoi(startTime[0])
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// evtEndInt, err := strconv.Atoi(endTime[0])
+	// if err != nil {
+	// 	return nil, err
+	// }
+	timeFormat, err := TimeConvert(0, ":", event.StartTime, event.EndTime)
+	if err != nil {
+		return nil, err
+	}
+	
+	for i := 1; i < len(timeFormat); i++ {
+		if timeFormat[i-1] > timeFormat[i] {
+			return nil, errors.New("event_time: end time must be later than start time")
+		}
 	}
 
 	const (
@@ -81,9 +123,16 @@ func (e *EventService) CreateEvent(user string, event *dto.EventDto) (interface{
 		Bentrok: false,
 	}
 
-	person := make(map[string][]string)
+	// person := make(map[string][]string)
 
-	err = e.EventRepository.CreateEvent(user, newEvent, person)
+	// masukin array person ke followed_event_entity
+
+	err = e.EventRepository.EventFollowedPerson(event.InvitedUser)
+	if err != nil {
+		return nil, err
+	}
+
+	err = e.EventRepository.CreateEvent(user, newEvent, event.InvitedUser)
 	if err != nil {
 		return nil, err
 	}

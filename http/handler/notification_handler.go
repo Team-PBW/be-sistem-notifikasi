@@ -4,7 +4,6 @@ import (
 	// "time"
 
 	"net/http"
-
 	"github.com/labstack/echo"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
@@ -28,7 +27,7 @@ func (n *NotificationHandler) NotificationBroadcast(c echo.Context) error {
 	log.Info("Create new cron")
 	cronNew := cron.New()
 
-	username := c.Get("username").(string)
+	username := c.Get("username").(string)	
 
     // Menjadwalkan job yang akan berjalan setiap satu hari
     cronNew.AddFunc("0 * * * * *", func() {
@@ -37,7 +36,7 @@ func (n *NotificationHandler) NotificationBroadcast(c echo.Context) error {
 
 		// cek notifikasi dari nama wawan dimana cron_saat_ini h-25jam start_date (join followed_event dgn event_entities)
 		// n.NotificationService.Check
-		n.NotificationService.CreateNotification(username)
+		n.NotificationService.NotificationAlarm(username)
     })
 
 	log.Info("Start cron")

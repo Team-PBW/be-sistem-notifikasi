@@ -89,3 +89,15 @@ func (u *AuthRepository) GetSelfInformation(username string) (*entity.UserEntity
 
 	return user, err
 }
+
+func (u *AuthRepository) FriendDropdown(username string) ([]*entity.UserEntity, error) {
+    var users []*entity.UserEntity
+    err := u.DB.Model(&entity.UserEntity{}).
+        Joins("JOIN followed_entities ON followed_entities.following = user_entities.username").
+        Where("followed_entities.username = ?", username).
+        Find(&users).Error
+	
+	log.Println(users)
+
+	return users, err
+}

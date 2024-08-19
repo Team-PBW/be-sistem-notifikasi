@@ -109,6 +109,10 @@ func (e *EventHandler) AddEvent(c echo.Context) error {
 	if convertUsername, ok := responseUser.Data.(string); ok {
 		data, err := e.EventService.CreateEvent(convertUsername, event)
 		if err != nil {
+			if err.Error() == "event_time" {
+				log.Println("error create event")
+				return echo.NewHTTPError(http.StatusBadRequest, "end time event should be larger than start time event")
+			}
 			log.Println("error create event")
 			return echo.NewHTTPError(internalServerError, "internal service error")
 		}
@@ -217,3 +221,7 @@ func (e *EventHandler) CategorizeEventByDatetime(c echo.Context) error {
 		data,
 	)
 }
+
+// func (e *EventHandler) ListFollowedAccount(c echo.Context) error {
+
+// }

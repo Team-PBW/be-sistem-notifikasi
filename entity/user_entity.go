@@ -11,4 +11,6 @@ type UserEntity struct {
 	Email     string
 	Password  string
 	CreatedAt time.Time
+
+	// Users []*UserEntity `gorm:"many2many:followed_entities;"`
 }
