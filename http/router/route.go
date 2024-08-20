@@ -3,7 +3,6 @@ package router
 import (
 	"github.com/labstack/echo"
 	midware "github.com/labstack/echo/middleware"
-	// "github.com/labstack/echo/v4"
 	"golang.org/x/e-calender/app"
 	"golang.org/x/e-calender/middleware"
 )
